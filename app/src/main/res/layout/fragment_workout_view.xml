@@ -80,6 +80,35 @@
 
         <FrameLayout
             android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <TextView
+                android:id="@+id/locationField"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:layout_weight="1"
+                android:clickable="false"
+                android:focusable="false"
+                android:gravity="center_vertical"
+                android:hint="Location"
+                android:inputType="none" />
+
+            <ImageButton
+                android:id="@+id/locationButton"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_gravity="end"
+
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:src="@drawable/location_icon"
+                android:scaleType="centerCrop"
+                android:adjustViewBounds="true"
+                android:padding="0dp" />
+        </FrameLayout>
+
+
+        <FrameLayout
+            android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:outlineAmbientShadowColor="#000000">
 

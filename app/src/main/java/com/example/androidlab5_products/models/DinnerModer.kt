@@ -7,5 +7,6 @@ import java.util.Date
 @Entity(tableName = "dinners")
 data class DinnerModer(
     @PrimaryKey(autoGenerate = true) var id: Long = 0,
-    var date: Date
+    var date: Date,
+    var location: String
 )

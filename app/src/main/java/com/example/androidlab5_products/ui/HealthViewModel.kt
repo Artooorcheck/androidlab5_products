@@ -1,11 +1,16 @@
 package com.example.androidlab5_products.ui
 
+import android.Manifest
+import android.app.Activity
+import android.content.pm.PackageManager
 import android.util.Log
+import androidx.core.app.ActivityCompat
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.asLiveData
 import androidx.lifecycle.viewModelScope
+import com.example.androidlab5_products.MainActivity
 import com.example.androidlab5_products.models.Product
 import com.example.androidlab5_products.models.DinnerModer
 import com.example.androidlab5_products.network.RetrofitInstance
@@ -15,10 +20,12 @@ import com.example.androidlab5_products.storage.DinnerRepository
 import kotlinx.coroutines.launch
 import java.util.Date
 
-class HealthViewModel(private val dinnerRepository: DinnerRepository, private val productRepository: ProductRepository) : ViewModel() {
+class HealthViewModel(
+    private val dinnerRepository: DinnerRepository,
+    private val productRepository: ProductRepository) : ViewModel() {
     val workouts: LiveData<List<DinnerModer>> = dinnerRepository.getAllTrainings().asLiveData()
 
-    private val _dinner = MutableLiveData(Dinner( DinnerModer(-1, Date()), mutableListOf()))
+    private val _dinner = MutableLiveData(Dinner( DinnerModer(-1, Date(), ""), mutableListOf()))
     val dinner: LiveData<Dinner> get() = _dinner
 
     fun modTraining(training: Dinner) {
@@ -36,7 +43,7 @@ class HealthViewModel(private val dinnerRepository: DinnerRepository, private va
 
     fun selectDinner(id: Long) {
         if(id <= 0)
-            _dinner.value = Dinner( DinnerModer(-1, Date()), mutableListOf())
+            _dinner.value = Dinner( DinnerModer(-1, Date(), ""), mutableListOf())
         else
             fetchTrainingWithExercises(id){ workout ->
                 _dinner.value = workout
@@ -52,7 +59,7 @@ class HealthViewModel(private val dinnerRepository: DinnerRepository, private va
 
     fun deleteWorkout(trainingId: Long){
         viewModelScope.launch {
-            dinnerRepository.deleteTraining(DinnerModer(trainingId, Date()))
+            dinnerRepository.deleteTraining(DinnerModer(trainingId, Date(), ""))
         }
     }
 
@@ -95,8 +102,7 @@ class HealthViewModel(private val dinnerRepository: DinnerRepository, private va
                 Log.e("OpenFoodFacts", "Ошибка: ${e.localizedMessage}")
             }
 
-            action?.invoke(null)
+            action.invoke(null)
         }
     }
-
 }

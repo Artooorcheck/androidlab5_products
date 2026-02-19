@@ -36,11 +36,12 @@ class CameraFragment(private val viewModel: HealthViewModel) : Fragment() {
     ): View? {
         val view = inflater.inflate(R.layout.fragment_camera_view, container, false)
         previewView = view.findViewById(R.id.previewView)
+        startCamera()
         return view
     }
 
-    @OptIn(ExperimentalGetImage::class)
-    fun startCamera(context: Context) {
+    private fun startCamera() {
+        val context = requireContext()
         var cameraProviderFuture = ProcessCameraProvider.getInstance(context)
 
         cameraProviderFuture.addListener({

@@ -68,6 +68,7 @@ dependencies {
     implementation(libs.converter.gson)
     implementation(libs.androidx.camera.lifecycle)
     implementation(libs.androidx.camera.view)
+    implementation(libs.play.services.location)
     annotationProcessor(libs.androidx.room.compiler.v2xx)
     kapt(libs.androidx.room.compiler)
     testImplementation(libs.junit)

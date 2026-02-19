@@ -45,8 +45,6 @@ class MainActivity : AppCompatActivity() {
         supportFragmentManager.beginTransaction()
             .replace(R.id.workout_items_list, listFragment)
             .commit()
-
-        requestPermissionCamera()
     }
 
 

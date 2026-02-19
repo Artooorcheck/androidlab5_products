@@ -1,6 +1,8 @@
 package com.example.androidlab5_products.fragments
 
+import android.Manifest
 import android.content.Context
+import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -8,9 +10,14 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.EditText
+import android.widget.ImageButton
 import android.widget.TextView
+import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
+import androidx.annotation.RequiresPermission
 import androidx.compose.runtime.toMutableStateMap
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -22,18 +29,22 @@ import com.example.androidlab5_products.models.Product
 import com.example.androidlab5_products.models.DinnerModer
 import com.example.androidlab5_products.pojo.Dinner
 import com.example.androidlab5_products.ui.HealthViewModel
+import com.google.android.gms.location.LocationServices
 import java.util.Date
 import kotlin.math.min
 
 
-class WorkoutFragmentView(private val viewModel: HealthViewModel, private val context: Context) : Fragment() {
+class WorkoutFragmentView(
+    private val viewModel: HealthViewModel,
+    private val context: Context) : Fragment() {
     private lateinit var etDate: EditText
     private lateinit var sumKcal: TextView
+    private lateinit var locationField: TextView
 
     private lateinit var exerciseFragment: ExerciseFragment
     private lateinit var cameraFragment: CameraFragment
 
-    private var workout = DinnerModer(0,  Date())
+    private var workout = DinnerModer(0,  Date(), "")
     private var exerciseMap: MutableMap<Long, ProductModel> = mutableMapOf()
 
     private var onCloseAction: (() -> Unit)? = null
@@ -46,11 +57,13 @@ class WorkoutFragmentView(private val viewModel: HealthViewModel, private val co
         val view = inflater.inflate(R.layout.fragment_workout_view, container, false)
         etDate = view.findViewById(R.id.date_filter)
         sumKcal = view.findViewById(R.id.sum_kcal)
+        locationField = view.findViewById(R.id.locationField)
         val scanButton = view.findViewById<Button>(R.id.scan_product_button)
         val addButton = view.findViewById<Button>(R.id.add_product_button)
         val exerciseContainer = view.findViewById<RecyclerView>(R.id.product_list)
         val saveButton = view.findViewById<Button>(R.id.save_button)
         val closeButton = view.findViewById<Button>(R.id.close_button)
+        val locationButton = view.findViewById<ImageButton>(R.id.locationButton)
 
         exerciseFragment = ExerciseFragment()
         cameraFragment = CameraFragment(viewModel)
@@ -104,12 +117,46 @@ class WorkoutFragmentView(private val viewModel: HealthViewModel, private val co
         exerciseContainer.layoutManager = LinearLayoutManager(context)
         exerciseContainer.adapter = adapter
 
+        val cameraPermissionLauncher =
+            registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
+                if (granted) {
+                    openCamera()
+                } else {
+                    Toast.makeText(requireContext(), "Camera access denied", Toast.LENGTH_SHORT).show()
+                }
+            }
+
         scanButton.setOnClickListener{
-            parentFragmentManager.beginTransaction()
-                .replace(R.id.view_popup, cameraFragment)
-                .addToBackStack(null)
-                .commit()
-            cameraFragment.startCamera(requireActivity())
+            if (ContextCompat.checkSelfPermission(
+                    requireContext(),
+                    Manifest.permission.CAMERA
+                ) == PackageManager.PERMISSION_GRANTED
+            ) {
+                openCamera()
+            } else {
+                cameraPermissionLauncher.launch(Manifest.permission.CAMERA)
+            }
+        }
+
+        val locationPermissionLauncher =
+            registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
+                if (granted) {
+                    getLocation()
+                } else {
+                    Toast.makeText(requireContext(), "Location access denied", Toast.LENGTH_SHORT).show()
+                }
+            }
+
+        locationButton.setOnClickListener{
+            if (ContextCompat.checkSelfPermission(
+                    requireContext(),
+                    Manifest.permission.ACCESS_FINE_LOCATION
+                ) == PackageManager.PERMISSION_GRANTED
+            ) {
+                getLocation()
+            } else {
+                locationPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
+            }
         }
 
         saveButton.setOnClickListener{
@@ -126,8 +173,27 @@ class WorkoutFragmentView(private val viewModel: HealthViewModel, private val co
         return view
     }
 
-    fun updateModel(dinner: Dinner) {
+    private fun openCamera() {
+        parentFragmentManager.beginTransaction()
+            .replace(R.id.view_popup, cameraFragment)
+            .addToBackStack(null)
+            .commit()
+    }
 
+    @RequiresPermission(allOf = [Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION])
+    private fun getLocation() {
+        LocationServices.getFusedLocationProviderClient(requireContext())
+            .lastLocation
+            .addOnSuccessListener { location ->
+                if (location != null) {
+                    val lat = location.latitude
+                    val lon = location.longitude
+                    workout.location = "$lat, $lon"
+                    locationField.text = workout.location
+                } else {
+                    Toast.makeText(requireContext(), "Location is null", Toast.LENGTH_SHORT).show()
+                }
+            }
     }
 
     private fun addWorkout() {
@@ -136,6 +202,7 @@ class WorkoutFragmentView(private val viewModel: HealthViewModel, private val co
 
     private fun updateFields() {
         var kcalAmount = 0L
+        locationField.text = workout.location
         etDate.setText(workout.date.toString())
         if(exerciseMap.count() > 0) {
             kcalAmount = exerciseMap.values.sumOf { item ->

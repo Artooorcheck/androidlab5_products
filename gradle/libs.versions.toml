@@ -35,6 +35,7 @@ uiVersion = "1.5.0"
 databindingRuntime = "8.8.2"
 cameraLifecycle = "1.4.2"
 cameraView = "1.4.2"
+playServicesLocation = "21.3.0"
 
 [libraries]
 androidx-appcompat-v161 = { module = "androidx.appcompat:appcompat", version.ref = "appcompatVersion" }
@@ -77,6 +78,7 @@ androidx-storage = { group = "androidx.test.services", name = "storage", version
 androidx-databinding-runtime = { group = "androidx.databinding", name = "databinding-runtime", version.ref = "databindingRuntime" }
 androidx-camera-lifecycle = { group = "androidx.camera", name = "camera-lifecycle", version.ref = "cameraLifecycle" }
 androidx-camera-view = { group = "androidx.camera", name = "camera-view", version.ref = "cameraView" }
+play-services-location = { group = "com.google.android.gms", name = "play-services-location", version.ref = "playServicesLocation" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
